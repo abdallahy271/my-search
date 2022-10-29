@@ -1,0 +1,55 @@
+{
+  "short_name": "MySearch",
+  "name": "MySearch",
+  "description": "Convenient Google Chrome History Searcher",
+  "version": "1.0",
+  "manifest_version": 2,
+  "background":{
+    "scripts": ["./static/js/content.js"]
+  },
+  "browser_action": {
+    "default_popup": "index.html",
+    "default_title": "Open the popup"
+  },
+  "icons": {
+    "16": "logo192.png",
+    "48": "logo192.png",
+    "128": "logo192.png"
+  },
+  "content_security_policy": "script-src 'self' 'unsafe-eval' https://www.googleapis.com/oauth2/v3/userinfo https://accounts.google.com/gsi/client; object-src 'self'",
+  "permissions": [
+    "activeTab",
+    "identity",
+    "history",
+    "storage",
+    "cookies",
+    "http://localhost:5000/*",
+    "*://*.google.com/*"
+  ],
+  "host_permissions": [
+    "*://*.google.com/"
+  ],
+  "optional_permissions": [
+    "<all_urls>"
+  ],
+  "oauth2": {
+    "client_id": "1055552337084-qfefrd3i2u24qm9t7lf8q8fvm6otubif.apps.googleusercontent.com",
+    "scopes":[
+      "https://www.googleapis.com/auth/chromewebstore.readonly",
+      "https://www.googleapis.com/auth/contacts.readonly", 
+      "https://www.googleapis.com/auth/userinfo.email",
+      "openid", 
+      "email", 
+      "profile"
+    ]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["./static/js/content.js"],
+      "all_frames": false,
+      "run_at": "document_end"
+    }
+  ]
+}
