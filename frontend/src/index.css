@@ -1,3 +1,10 @@
+@import '~rsuite/dist/rsuite.min.css';
+/* @import '~rsuite/styles/index.less'; */
+
+
+@enable-dark-mode: true;
+
+
 html, body {
   width: 840px;
   height: 100%;

@@ -72,9 +72,15 @@ function addWithFlask(
     sendResponse: MessageResponse
     ) {
     if (request.from === Sender.FlaskSearch && request.message.keyword.length > 0) {
-      const { keyword, userEmail } = request.message
-      console.log(keyword, userEmail)
-      fetch(`${SERVER_URL}/search?query=${keyword}&user=${userEmail}`,
+      const { keyword, userEmail, date } = request.message
+      let after = 0, before = Date.now();
+      if (date && date.length === 2){
+        after = date[0]
+        before = date[1]
+      }
+      
+      console.log(keyword, userEmail, date)
+      fetch(`${SERVER_URL}/search?query=${keyword}&user=${userEmail}&after=${after}&before=${before}`,
         {
             method: 'GET',
             mode: 'cors',
@@ -84,6 +90,7 @@ function addWithFlask(
         })
         .then(response => response.json())
         .then(text => {
+          console.log("Result", text)
           return text
         })
         .then(historyStatus => sendResponse({type: "Success", response: historyStatus}))

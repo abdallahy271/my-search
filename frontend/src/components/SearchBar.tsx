@@ -6,6 +6,10 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import { DateRangePicker, CustomProvider } from 'rsuite';
+import FilterToggle from './FilterToggle';
+
+
 
 interface SearchBarProp {
     userEmail: string;
@@ -16,18 +20,23 @@ interface SearchBarProp {
 export const SearchBar: React.FC<SearchBarProp> = ({ userEmail, error, setError }) => {
     const [searchInput, setSearchInput] = useState("");
     const [searchResult, setSearchResult] = useState([]);
+    const [date, setDate] = useState<number[] | null>([])
+    const [showDatePicker, setShowDatePicker] = useState<boolean>(false)
 
     const handleChange = (e: any) => {
         e.preventDefault();
         setSearchInput(e.target.value);
       };
 
+    function epoch(val: Date): number   {
+        return val?.getTime()
+    }
 
-    function searchHistory(keyword: string) {
+    function searchHistory(keyword: string, date: number[]| null) {
 
         const message: ChromeMessage = {
             from: Sender.FlaskSearch,
-            message: { keyword, userEmail },
+            message: { keyword, userEmail, date },
         }
         chrome?.runtime?.sendMessage(
             message,
@@ -45,24 +54,33 @@ export const SearchBar: React.FC<SearchBarProp> = ({ userEmail, error, setError 
       }
 
     useEffect(() => {
+        if (!showDatePicker) {
+            setDate([])
+        }
+    }, [showDatePicker])
+
+    useEffect(() => {
         if (searchInput.length > 0) {
             //make api call to search
-            searchHistory(searchInput)
+            searchHistory(searchInput, date)
         }else{
             setSearchResult([])
         }
-    },[searchInput])
+    },[searchInput, date])
     
     if (error)
         return <div>{error}</div>
+    
+    console.log('date', date)
 
     return (
             <>
             <Box
                 sx={{
-                    width: 300,
+                    width: 400,
                     maxWidth: '100%',
-                    marginBottom: 2
+                    marginBottom: 2,
+                    display: 'flex',
                 }}
             >
                 <TextField 
@@ -72,10 +90,33 @@ export const SearchBar: React.FC<SearchBarProp> = ({ userEmail, error, setError 
                 color="primary"
                 onChange={handleChange}
                 value={searchInput}
-                sx={{ input: { color: "white" } }}
+                sx={{ input: { color: "white", }, marginRight: 2}}
                 />
 
+                <FilterToggle setShowDatePicker={setShowDatePicker}/>
+
             </Box>
+                {showDatePicker && (
+                    <Box
+                    sx={{
+                        width: 400,
+                        maxWidth: '100%',
+                        display: 'flex',
+
+                    }}
+                    >
+                    <CustomProvider theme="dark">
+                        <DateRangePicker
+                        className=''
+                        format="yyyy-MM-dd hh:mm aa"
+                        showMeridian
+                        defaultCalendarValue={[new Date(), new Date()]}
+                        onChange={(displyedDate) => setDate(displyedDate && displyedDate?.map(epoch))}
+                        />
+                    </CustomProvider>
+                </Box>
+            )}
+            
             <Box
                 sx={{
                     width: 700,

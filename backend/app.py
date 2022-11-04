@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, m
 from flask_sqlalchemy import SQLAlchemy
 from flask_msearch import Search
 import psycopg2
-from search.index import scraper, write_content, index_search
+from search.index import scraper
 from elasticsearch import Elasticsearch
 from celery import Celery
 from dotenv import load_dotenv
@@ -106,12 +106,22 @@ def add_link():
 def search():
     query = request.args.get("query", '')
     user_email = request.args.get("user", '')
+    after = request.args.get("after", '')
+    before = request.args.get("before", '')
 
     # Elastic search query
     body = {
         "query": {
             "bool": {
                 "must": [
+                    {
+                        "range": {
+                            "lastVisitTime": {
+                                "gte": after,
+                                "lte": before
+                                    }
+                                }
+                    },
                     {
                         "simple_query_string": 
                             {
@@ -127,6 +137,7 @@ def search():
                                 "user": user_email
                                 }
                     }
+                    
                 ]
             }
         }
