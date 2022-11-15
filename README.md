@@ -27,9 +27,13 @@ cd kibana-8.4.3
 
 ```
 cd my-search/backend
-python3 -m venv venv/bin/activate
+python3 -m venv venv
 source venv/bin/activate
 pip3 install -r requirements.txt
+```
+### Start Redis
+```
+redis-server
 ```
 
 Check if redis is installed
