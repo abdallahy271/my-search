@@ -1,9 +1,14 @@
-import { ChromeMessage, Sender } from "../types";
+import { 
+  ChromeMessage,
+  Sender, 
+  RemovedResult,
+  MessageResponse 
+} from "../types";
 
-type MessageResponse = (response?: any) => void
-
-const SERVER_URL =  "http://localhost:5000"
+const SERVER_URL =  "https://mychromehistory.world"
 const OAUTH2_URL =  "https://www.googleapis.com/oauth2/v3"
+let userEmail: string
+let jwtToken: string
 
 const validateSender = (
     message: ChromeMessage,
@@ -50,7 +55,8 @@ function addWithFlask(
                 "user": user
             }),
             headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
             }
         }
         )
@@ -63,6 +69,39 @@ function addWithFlask(
           .catch(error => console.log(error))
       return true;  // Will respond asynchronously.
     }
+  }
+
+  function removeFromFlask(
+    removed: RemovedResult
+  ) {
+
+    if (removed.urls && removed.urls.length > 0) {
+      fetch(`${SERVER_URL}/delete`,
+        {
+            method: 'POST',
+            mode: 'cors',
+            body: JSON.stringify({
+                "removedSites": removed.urls,
+                "user": userEmail
+            }),
+            headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+            }
+        }
+        )
+          .then(response => response.text())
+          .then(text => {
+            console.log(text)
+            return text
+          })
+          .catch(error => console.log(error))
+      return true;  // Will respond asynchronously.
+    }
+
+    
+
+    console.log('Removed', removed, userEmail)
   }
 
 
@@ -85,7 +124,8 @@ function addWithFlask(
             method: 'GET',
             mode: 'cors',
             headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
             }
         })
         .then(response => response.json())
@@ -114,8 +154,9 @@ function addWithFlask(
           }
           const response = await fetch(`${OAUTH2_URL}/userinfo?access_token=${token}`)
           const user_info = await response.json()
+          userEmail = user_info?.email
+          jwtToken = token
           console.log('user_info', user_info)
-
         
           let startTime = 0
           const endTime = Date.now()
@@ -137,10 +178,11 @@ function addWithFlask(
                       mode: 'cors',
                       body: JSON.stringify({
                           "history": historyData,
-                          "user": user_info?.email
+                          "user": userEmail
                       }),
                       headers: {
-                      'Content-Type': 'application/json'
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${jwtToken}`
                       }
                   })
               const text = await response.text()
@@ -170,7 +212,7 @@ const main = () => {
     chrome.runtime.onMessage.addListener(searchFromFlask);
     chrome.runtime.onMessage.addListener(messagesFromReactAppListener);
     chrome.runtime.onMessage.addListener(getUserAuth);
-
+    chrome.history.onVisitRemoved.addListener(removeFromFlask);
 }
 
 main();

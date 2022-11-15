@@ -1,0 +1,50 @@
+version: "3.7"
+services:
+  web:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+     - "5000:5000"
+    depends_on:
+      - redis
+    volumes: ['./api:/api']
+    env_file:
+      - ./.env/api.env
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+    depends_on:
+      - web
+      - monitor
+  worker:
+    build:
+      context: ./celery-queue
+      dockerfile: Dockerfile
+    command: celery -A tasks worker -l info -E
+    depends_on:
+      - redis
+    volumes: ['./celery-queue:/queue']
+    env_file:
+      - ./.env/queue.env
+  monitor:
+    build:
+      context: ./celery-queue
+      dockerfile: Dockerfile
+    ports:
+     - "5555:5555"
+    command: celery -A tasks flower --auto_refresh=True --url_prefix=monitor
+    depends_on:
+      - redis
+      - worker
+    volumes: ['./celery-queue:/queue']
+    env_file:
+      - ./.env/queue.env
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
