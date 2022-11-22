@@ -7,7 +7,7 @@ import {
 import jwt_decode, { JwtPayload } from 'jwt-decode';
 
 
-const SERVER_URL =  "https://history.world"
+const SERVER_URL =  "https://mychromehistory.world"
 const OAUTH2_URL =  'https://accounts.google.com/o/oauth2/v2/auth'
 let userEmail: string
 let jwtToken: string
