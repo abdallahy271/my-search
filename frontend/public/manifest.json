@@ -9,7 +9,7 @@
   },
   "browser_action": {
     "default_popup": "index.html",
-    "default_title": "Open the popup"
+    "default_title": "Search your history"
   },
   "icons": {
     "16": "logo192.png",
@@ -20,9 +20,7 @@
   "permissions": [
     "tab",
     "activeTab",
-    "cookies",
     "identity",
-    "identity.email",
     "history",
     "storage",
     "cookies",

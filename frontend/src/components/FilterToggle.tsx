@@ -70,20 +70,14 @@ export default function FilterToggle({ setShowDatePicker }: FilterToggleProp) {
 
   return (
     <FormGroup sx={{display: 'flex', }}>
-        <Box
-          
-          >
-
-      <FormControlLabel
-        control={<IOSSwitch sx={{ m: 1 }} />}
-        label={<SwitchLabel /> }
-        sx={{ display: 'flex',flexDirection: 'column', alignItems: 'flex-start' }}
-        onChange={checkedSwitch}
-      />
-
+        <Box>
+          <FormControlLabel
+            control={<IOSSwitch sx={{ m: 1 }} />}
+            label={<SwitchLabel /> }
+            sx={{ display: 'flex',flexDirection: 'column', alignItems: 'flex-start' }}
+            onChange={checkedSwitch}
+          />  
       </Box>
-
-      
     </FormGroup>
   );
 }

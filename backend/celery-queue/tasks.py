@@ -1,6 +1,7 @@
 import os
 import hashlib
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, RequestsHttpConnection
+from ssl import create_default_context
 
 from celery import Celery
 from search.index import scraper
@@ -18,13 +19,21 @@ ELASTIC_USERNAME = os.environ.get('ES_USERNAME')
 ELASTIC_PASSWORD = os.environ.get('ES_PASSWORD')
 ELASTIC_HOST = os.environ.get('ES_HOST')
 
+# es_client = Elasticsearch(
+#     hosts=[ELASTIC_HOST],
+#     scheme="https",
+#     port=443,
+#     http_auth=(ELASTIC_USERNAME, ELASTIC_PASSWORD),
+
+# )
+
 es_client = Elasticsearch(
-    # "https://localhost:9200",
     hosts=[ELASTIC_HOST],
     scheme="https",
-    port=443,
     http_auth=(ELASTIC_USERNAME, ELASTIC_PASSWORD),
-
+    use_ssl=True,
+    verify_certs=True,
+    connection_class= RequestsHttpConnection
 )
 
 # Successful response!
@@ -32,7 +41,6 @@ print('client_info', es_client.info())
 
 
 def id_generator(user, url):
-    #Since I am the only user, I only hash with the url but will later change to both url and user
     return hashlib.sha1(str.encode(user + url)).hexdigest()
 
     # return hashlib.sha1(str.encode(url)).hexdigest()
@@ -63,46 +71,3 @@ def delete_index_link(user_email, removed_sites):
     ids = [id_generator(user_email, site) for site in removed_sites]        
     query = {"query": {"terms": {"_id": ids}}}
     es_client.delete_by_query(index='history', body=query)
-
-# @celery_client.task(name='tasks.search_link')
-# def search_index_link(query, user_email, after, before):
-#     body = {
-#         "query": {
-#             "bool": {
-#                 "must": [
-#                     {
-#                         "range": {
-#                             "lastVisitTime": {
-#                                 "gte": after,
-#                                 "lte": before
-#                                     }
-#                                 }
-#                     },
-#                     {
-#                         "simple_query_string": 
-#                             {
-#                             "query": f"{query}*",
-#                             "fields": ["content", "title", "url"],
-#                             "analyze_wildcard": True,
-#                             "default_operator":"AND"
-#                             }
-#                     },
-#                     {
-#                         "match": 
-#                                 {
-#                                 "user": user_email
-#                                 }
-#                     }
-                    
-#                 ]
-#             }
-#         }
-#     }
-
-#     res = es_client.search(index="history", body=body)
-    
-#     files = []
-#     if len(res['hits']['hits']):
-#         files = [dict(i['_source']) for i in res['hits']['hits'] ]
-
-#     return files

@@ -1,37 +1,22 @@
-from flask import Flask, render_template, request, Response
+from flask import Flask, request, Response
 from flask_sqlalchemy import SQLAlchemy
 from flask_msearch import Search
-from elasticsearch import Elasticsearch
-from celery import Celery
+from elasticsearch import Elasticsearch, RequestsHttpConnection
 from dotenv import load_dotenv
 from worker import celery
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from ssl import create_default_context
 
 import os
 import hashlib
 # import psycopg2
 
 
-dev_mode = True
+# dev_mode = True
 app = Flask(__name__)
 
-# calling our middleware
-# app.wsgi_app = Middleware(app.wsgi_app)
-
 load_dotenv()
-
-ENV = 'dev'
-if ENV == 'dev':
-    # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/search'
-    # app.config['CELERY_BROKER_URL'] = os.environ.get('CELERY_BROKER_URL')
-    app.config['DEBUG'] = True
-else:
-    app.config['DEBUG'] = False
-
-# Set up celery client
-# celery_client = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-# celery_client.conf.update(app.config)
 
 # Set up ES
 ELASTIC_USERNAME = os.environ.get('ES_USERNAME')
@@ -45,13 +30,15 @@ ELASTIC_HOST = os.environ.get('ES_HOST')
 
 # search = Search()
 # search.init_app(app)
+
+
 es_client = Elasticsearch(
-    # "https://localhost:9200",
     hosts=[ELASTIC_HOST],
     scheme="https",
-    port=443,
     http_auth=(ELASTIC_USERNAME, ELASTIC_PASSWORD),
-
+    use_ssl=True,
+    verify_certs=True,
+    connection_class= RequestsHttpConnection
 )
 
 # Successful response!
@@ -71,7 +58,6 @@ def check_auth_token():
     '''
     Google authentication middleware
     '''
-
     try:
        
         bearer_token = request.headers.get('Authorization')
@@ -79,7 +65,7 @@ def check_auth_token():
 
         user_email = request.json.get('user')
 
-        CLIENT_ID = "1055552337084-2ut0l1cd1osq7j4d4uukdco9v8a6a2ml.apps.googleusercontent.com"
+        CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') 
         
         # Specify the CLIENT_ID of the app that accesses the backend:
         idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
@@ -102,7 +88,9 @@ def check_auth_token():
         return res
 
             
-
+@app.route('/', methods=['GET'])
+def my_search():
+    return "Welcome to MySearch"
 
 @app.route('/add', methods=['POST', 'GET'])
 def add_link():
@@ -120,12 +108,8 @@ def add_link():
 
         # whoosh workflow
         # file = File(path=dic['url'], title=dic['title'], content=dic['content'])
-
         # db.session.add(file)
         # db.session.commit()
-
-        # return make_response(jsonify(dict(es_file)), 201)
-        # return redirect(url_for('hello_world'))
 
 
 @app.route('/delete', methods=['POST'])
@@ -134,7 +118,6 @@ def delete_link():
         user_email = request.get_json()['user']
         removed_sites = request.get_json()['removedSites']
         results = []
-        # delete_index_link.apply_async(args=[user_email, removed_sites])
 
         celery.send_task('tasks.delete_link', args=[user_email, removed_sites], kwargs={})
 
@@ -149,8 +132,6 @@ def search():
         user_email = request.args.get("user", '')
         after = request.args.get("after", '')
         before = request.args.get("before", '')
-
-
 
         # Elastic search query
         body = {

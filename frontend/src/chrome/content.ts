@@ -15,30 +15,6 @@ let jwtToken: string
 type TokenPayload = JwtPayload & { email: string };
 
 
-const validateSender = (
-    message: ChromeMessage,
-    sender: chrome.runtime.MessageSender
-) => {
-    return sender.id === chrome.runtime.id && message.from === Sender.React;
-}
-
-const messagesFromReactAppListener = (
-    message: ChromeMessage,
-    sender: chrome.runtime.MessageSender,
-    response: MessageResponse
-) => {
-
-    const isValidated = validateSender(message, sender);
-
-    if (isValidated && message.message === 'Hello from React') {
-        response('Hello from content.js');
-    }
-
-    if (isValidated && message.message === "delete logo") {
-        const logo = document.getElementById('hplogo');
-        logo?.parentElement?.removeChild(logo)
-    }
-}
 
 function addWithFlask(
     request:ChromeMessage,
@@ -184,75 +160,58 @@ function addWithFlask(
     sendResponse: MessageResponse
   ) {
     if (request.from === Sender.GetUserAuth) {
-      // Using chrome.identity
           
-      // @ts-ignore
-      chrome.identity.getProfileUserInfo({'accountStatus': 'ANY'}, function(info){ console.log('INFOOO',info)})
-
       chrome.storage.sync.get('jwt_token', function(result) {
 
-        let decodedToken = result['jwt_token'] && jwt_decode<TokenPayload>(result['jwt_token'])
+        const manifest = chrome.runtime.getManifest();
+        const r = (Math.random() + 1).toString(36).substring(7);
+        const CLIENT_ID = "1055552337084-2ut0l1cd1osq7j4d4uukdco9v8a6a2ml.apps.googleusercontent.com"
+        const clientId = encodeURIComponent(CLIENT_ID);
+        // @ts-ignore
+        const scopes = encodeURIComponent(manifest?.oauth2.scopes.join(' '));
+        const redirectUri = encodeURIComponent('https://' + chrome.runtime.id + '.chromiumapp.org');
+        const nonce = encodeURIComponent(r)
+  
+        const URL = OAUTH2_URL + 
+                  '?client_id=' + clientId + 
+                  '&response_type=id_token' + 
+                  '&access_type=offline' + 
+                  '&redirect_uri=' + redirectUri + 
+                  '&scope=' + scopes + 
+                  '&nonce=' + nonce;
+        
+        // Using chrome.identity
+        chrome.identity.launchWebAuthFlow(
+            {
+                'url': URL, 
+                'interactive': true
+            }, 
+            function(redirectedTo) {
+                if (!redirectedTo && chrome.runtime.lastError){
+                  console.warn("Whoops.. " + chrome.runtime.lastError.message);
+                  sendResponse({type: 'Failure', response: "Please Sign In to your Google Account"})
+                  return true;
+                } 
+                else {
 
-        if(!result.hasOwnProperty('jwt_token') || !decodedToken?.exp || decodedToken?.exp * 1000 < Date.now()){
+                    let response = redirectedTo?.split('#', 2)[1];
+                    let token = response?.split('&', 1)[0]
+                    let tokenId = token?.split('=')[1]
+                    
+                    if (tokenId != null){
+                      jwtToken = tokenId
+                      let user_info = jwt_decode<TokenPayload>(tokenId);
+                      userEmail = user_info?.email
+                      console.log(user_info)
+                      sendResponse({type: 'Success', response: userEmail})
+  
+                    }
+  
+                    sendData(jwtToken, userEmail)
+                }
+            }
+        );
 
-          const manifest = chrome.runtime.getManifest();
-          const r = (Math.random() + 1).toString(36).substring(7);
-          const CLIENT_ID = "1055552337084-2ut0l1cd1osq7j4d4uukdco9v8a6a2ml.apps.googleusercontent.com"
-          const clientId = encodeURIComponent(CLIENT_ID);
-          // @ts-ignore
-          const scopes = encodeURIComponent(manifest?.oauth2.scopes.join(' '));
-          const redirectUri = encodeURIComponent('https://' + chrome.runtime.id + '.chromiumapp.org');
-          const nonce = encodeURIComponent(r)
-    
-          const URL = OAUTH2_URL + 
-                    '?client_id=' + clientId + 
-                    '&response_type=id_token' + 
-                    '&access_type=offline' + 
-                    '&redirect_uri=' + redirectUri + 
-                    '&scope=' + scopes + 
-                    '&nonce=' + nonce;
-    
-          chrome.identity.launchWebAuthFlow(
-              {
-                  'url': URL, 
-                  'interactive': true
-              }, 
-              function(redirectedTo) {
-                  if (!redirectedTo && chrome.runtime.lastError){
-                    console.warn("Whoops.. " + chrome.runtime.lastError.message);
-                    sendResponse({type: 'Failure', response: "Please Sign In to your Google Account"})
-                    return true;
-                  } 
-                  else {
-
-                      let response = redirectedTo?.split('#', 2)[1];
-    
-                      // Example: id_token=<YOUR_BELOVED_ID_TOKEN>&authuser=0&hd=<SOME.DOMAIN.PL>&session_state=<SESSION_SATE>&prompt=<PROMPT>
-                      let token = response?.split('&', 1)[0]
-                      let tokenId = token?.split('=')[1]
-                      
-                      if (tokenId != null){
-                        jwtToken = tokenId
-                        let user_info = jwt_decode<TokenPayload>(tokenId);
-                        userEmail = user_info?.email
-                        console.log(user_info)
-    
-                        chrome.storage.sync.set({ 'jwt_token': tokenId }, function(){})
-                      }
-    
-                      sendData(jwtToken, userEmail)
-                  }
-              }
-          );
-        } else {
-          jwtToken = result['jwt_token']
-          console.log(decodedToken)
-
-          userEmail = decodedToken?.email
-          sendData(jwtToken, userEmail)
-        }
-
-        sendResponse({type: 'Success', response: userEmail})
 
       })
 
@@ -274,7 +233,6 @@ const main = () => {
 
     chrome.runtime.onMessage.addListener(addWithFlask);
     chrome.runtime.onMessage.addListener(searchFromFlask);
-    chrome.runtime.onMessage.addListener(messagesFromReactAppListener);
     chrome.runtime.onMessage.addListener(getUserAuth);
     chrome.history.onVisitRemoved.addListener(removeFromFlask);
 }

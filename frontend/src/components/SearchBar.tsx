@@ -10,7 +10,6 @@ import { DateRangePicker, CustomProvider } from 'rsuite';
 import FilterToggle from './FilterToggle';
 
 
-
 interface SearchBarProp {
     userEmail: string;
     error: string| undefined;
