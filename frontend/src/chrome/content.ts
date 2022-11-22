@@ -4,11 +4,16 @@ import {
   RemovedResult,
   MessageResponse 
 } from "../types";
+import jwt_decode, { JwtPayload } from 'jwt-decode';
 
-const SERVER_URL =  "https://mychromehistory.world"
-const OAUTH2_URL =  "https://www.googleapis.com/oauth2/v3"
+
+// const SERVER_URL =  "https://history.world"
+const SERVER_URL = "http://0.0.0.0:5000"
+const OAUTH2_URL =  'https://accounts.google.com/o/oauth2/v2/auth'
 let userEmail: string
 let jwtToken: string
+type TokenPayload = JwtPayload & { email: string };
+
 
 const validateSender = (
     message: ChromeMessage,
@@ -99,10 +104,7 @@ function addWithFlask(
       return true;  // Will respond asynchronously.
     }
 
-    
-
-    console.log('Removed', removed, userEmail)
-  }
+      }
 
 
   function searchFromFlask(
@@ -118,15 +120,17 @@ function addWithFlask(
         before = date[1]
       }
       
-      console.log(keyword, userEmail, date)
       fetch(`${SERVER_URL}/search?query=${keyword}&user=${userEmail}&after=${after}&before=${before}`,
-        {
-            method: 'GET',
-            mode: 'cors',
-            headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwtToken}`
-            }
+      {
+        method: 'POST',
+        mode: 'cors',
+        body: JSON.stringify({
+            "user": userEmail
+        }),
+        headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${jwtToken}`
+        }
         })
         .then(response => response.json())
         .then(text => {
@@ -139,59 +143,119 @@ function addWithFlask(
     }
   }
 
+
+
+  function sendData(jwtToken: string, userEmail: string) {
+    let startTime = 0
+    const endTime = Date.now()
+    chrome.storage && chrome.storage.sync.get('last_updated', function(result) {
+        
+        if (result && Object.keys(result).length > 0){
+            startTime = result['last_updated'] + 1
+        }
+        chrome.storage && chrome.storage.sync.set({"last_updated": endTime}, function() {
+        });
+
+        const historyInfo = {text: '', startTime, endTime};
+        chrome.history && chrome.history.search(historyInfo, async historyData => {
+
+        const response = await fetch(`${SERVER_URL}/add`,
+            {
+                method: 'POST',
+                mode: 'cors',
+                body: JSON.stringify({
+                    "history": historyData,
+                    "user": userEmail
+                }),
+                headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwtToken}`
+                }
+            })
+        const text = await response.text()
+        return text
+      })
+    })
+  }
+
   function getUserAuth(
     request:ChromeMessage,
     sender: chrome.runtime.MessageSender, 
     sendResponse: MessageResponse
   ) {
     if (request.from === Sender.GetUserAuth) {
+      // Using chrome.identity
+          
+      // @ts-ignore
+      chrome.identity.getProfileUserInfo({'accountStatus': 'ANY'}, function(info){ console.log('INFOOO',info)})
 
-      chrome.identity.getAuthToken({'interactive': true}, async (token) => {
-          if (!token && chrome.runtime.lastError){
-            console.warn("Whoops.. " + chrome.runtime.lastError.message);
-            sendResponse({type: 'Failure', response: "Please Sign In to your Google Account"})
-            return true;
-          }
-          const response = await fetch(`${OAUTH2_URL}/userinfo?access_token=${token}`)
-          const user_info = await response.json()
-          userEmail = user_info?.email
-          jwtToken = token
-          console.log('user_info', user_info)
-        
-          let startTime = 0
-          const endTime = Date.now()
-          chrome.storage && chrome.storage.sync.get('last_updated', function(result) {
-              
-              if (result && Object.keys(result).length > 0){
-                  startTime = result['last_updated'] + 1
-              }
-              chrome.storage && chrome.storage.sync.set({"last_updated": endTime}, function() {
-              });
+      chrome.storage.sync.get('jwt_token', function(result) {
 
-              console.log('historyTime', {startTime, endTime})
-              const historyInfo = {text: '', startTime, endTime};
-              chrome.history && chrome.history.search(historyInfo, async historyData => {
+        let decodedToken = result['jwt_token'] && jwt_decode<TokenPayload>(result['jwt_token'])
 
-              const response = await fetch(`${SERVER_URL}/add`,
-                  {
-                      method: 'POST',
-                      mode: 'cors',
-                      body: JSON.stringify({
-                          "history": historyData,
-                          "user": userEmail
-                      }),
-                      headers: {
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${jwtToken}`
+        if(!result.hasOwnProperty('jwt_token') || !decodedToken?.exp || decodedToken?.exp * 1000 < Date.now()){
+
+          const manifest = chrome.runtime.getManifest();
+          const r = (Math.random() + 1).toString(36).substring(7);
+          const CLIENT_ID = "1055552337084-2ut0l1cd1osq7j4d4uukdco9v8a6a2ml.apps.googleusercontent.com"
+          const clientId = encodeURIComponent(CLIENT_ID);
+          // @ts-ignore
+          const scopes = encodeURIComponent(manifest?.oauth2.scopes.join(' '));
+          const redirectUri = encodeURIComponent('https://' + chrome.runtime.id + '.chromiumapp.org');
+          const nonce = encodeURIComponent(r)
+    
+          const URL = OAUTH2_URL + 
+                    '?client_id=' + clientId + 
+                    '&response_type=id_token' + 
+                    '&access_type=offline' + 
+                    '&redirect_uri=' + redirectUri + 
+                    '&scope=' + scopes + 
+                    '&nonce=' + nonce;
+    
+          chrome.identity.launchWebAuthFlow(
+              {
+                  'url': URL, 
+                  'interactive': true
+              }, 
+              function(redirectedTo) {
+                  if (!redirectedTo && chrome.runtime.lastError){
+                    console.warn("Whoops.. " + chrome.runtime.lastError.message);
+                    sendResponse({type: 'Failure', response: "Please Sign In to your Google Account"})
+                    return true;
+                  } 
+                  else {
+
+                      let response = redirectedTo?.split('#', 2)[1];
+    
+                      // Example: id_token=<YOUR_BELOVED_ID_TOKEN>&authuser=0&hd=<SOME.DOMAIN.PL>&session_state=<SESSION_SATE>&prompt=<PROMPT>
+                      let token = response?.split('&', 1)[0]
+                      let tokenId = token?.split('=')[1]
+                      
+                      if (tokenId != null){
+                        jwtToken = tokenId
+                        let user_info = jwt_decode<TokenPayload>(tokenId);
+                        userEmail = user_info?.email
+                        console.log(user_info)
+    
+                        chrome.storage.sync.set({ 'jwt_token': tokenId }, function(){})
                       }
-                  })
-              const text = await response.text()
-              return text
-            })
-            })
-            sendResponse({type: 'Success', response: user_info?.email})
-          })
-     
+    
+                      sendData(jwtToken, userEmail)
+                  }
+              }
+          );
+        } else {
+          jwtToken = result['jwt_token']
+          console.log(decodedToken)
+
+          userEmail = decodedToken?.email
+          sendData(jwtToken, userEmail)
+        }
+
+        sendResponse({type: 'Success', response: userEmail})
+
+      })
+
       return true;
     }
   }

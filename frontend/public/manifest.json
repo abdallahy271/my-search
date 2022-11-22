@@ -16,18 +16,24 @@
     "48": "logo192.png",
     "128": "logo192.png"
   },
-  "content_security_policy": "script-src 'self' 'unsafe-eval' https://www.googleapis.com/oauth2/v3/userinfo https://accounts.google.com/gsi/client; object-src 'self'",
+  "content_security_policy": "script-src 'self' 'unsafe-eval' https://accounts.google.com/o/oauth2/v2/auth https://www.googleapis.com/oauth2/v3/userinfo https://accounts.google.com/gsi/client http://127.0.0.1:5000/login; object-src 'self'",
   "permissions": [
+    "tab",
     "activeTab",
+    "cookies",
     "identity",
+    "identity.email",
     "history",
     "storage",
     "cookies",
     "http://localhost:5000/*",
-    "*://*.google.com/*"
+    "*://*.google.com/*",
+    "https://mychromehistory.world/"
+
   ],
   "host_permissions": [
-    "*://*.google.com/"
+    "*://*.google.com/",
+    "https://mychromehistory.world/"
   ],
   "optional_permissions": [
     "<all_urls>"
@@ -35,9 +41,6 @@
   "oauth2": {
     "client_id": "1055552337084-qfefrd3i2u24qm9t7lf8q8fvm6otubif.apps.googleusercontent.com",
     "scopes":[
-      "https://www.googleapis.com/auth/chromewebstore.readonly",
-      "https://www.googleapis.com/auth/contacts.readonly", 
-      "https://www.googleapis.com/auth/userinfo.email",
       "openid", 
       "email", 
       "profile"
