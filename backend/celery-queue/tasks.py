@@ -1,7 +1,6 @@
 import os
 import hashlib
 from elasticsearch import Elasticsearch, RequestsHttpConnection
-from ssl import create_default_context
 
 from celery import Celery
 from search.index import scraper
@@ -19,13 +18,6 @@ ELASTIC_USERNAME = os.environ.get('ES_USERNAME')
 ELASTIC_PASSWORD = os.environ.get('ES_PASSWORD')
 ELASTIC_HOST = os.environ.get('ES_HOST')
 
-# es_client = Elasticsearch(
-#     hosts=[ELASTIC_HOST],
-#     scheme="https",
-#     port=443,
-#     http_auth=(ELASTIC_USERNAME, ELASTIC_PASSWORD),
-
-# )
 
 es_client = Elasticsearch(
     hosts=[ELASTIC_HOST],
@@ -42,9 +34,6 @@ print('client_info', es_client.info())
 
 def id_generator(user, url):
     return hashlib.sha1(str.encode(user + url)).hexdigest()
-
-    # return hashlib.sha1(str.encode(url)).hexdigest()
-
 
 
 @celery_client.task(name='tasks.add_link')

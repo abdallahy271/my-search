@@ -24,8 +24,6 @@ function addWithFlask(
     if (request.from === Sender.FlaskAdd && request.message.historyData.length > 0) {
       const { historyData, user } = request.message
 
-      console.log('USER', user)
-      console.log('allData', historyData)
       fetch(`${SERVER_URL}/add`,
         {
             method: 'POST',
@@ -42,7 +40,6 @@ function addWithFlask(
         )
           .then(response => response.text())
           .then(text => {
-            console.log(text)
             return text
           })
           .then(historyStatus => sendResponse(historyStatus))
@@ -72,7 +69,6 @@ function addWithFlask(
         )
           .then(response => response.text())
           .then(text => {
-            console.log(text)
             return text
           })
           .catch(error => console.log(error))
@@ -109,7 +105,6 @@ function addWithFlask(
         })
         .then(response => response.json())
         .then(text => {
-          console.log("Result", text)
           return text
         })
         .then(historyStatus => sendResponse({type: "Success", response: historyStatus}))
@@ -201,7 +196,6 @@ function addWithFlask(
                       jwtToken = tokenId
                       let user_info = jwt_decode<TokenPayload>(tokenId);
                       userEmail = user_info?.email
-                      console.log(user_info)
                       sendResponse({type: 'Success', response: userEmail})
   
                     }

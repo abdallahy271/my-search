@@ -70,8 +70,6 @@ export const SearchBar: React.FC<SearchBarProp> = ({ userEmail, error, setError 
     if (error)
         return <div>{error}</div>
     
-    console.log('date', date)
-
     return (
             <>
             <Box

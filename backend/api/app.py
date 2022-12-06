@@ -1,12 +1,9 @@
 from flask import Flask, request, Response
-from flask_sqlalchemy import SQLAlchemy
-from flask_msearch import Search
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 from dotenv import load_dotenv
 from worker import celery
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from ssl import create_default_context
 
 import os
 import hashlib
@@ -23,14 +20,6 @@ ELASTIC_USERNAME = os.environ.get('ES_USERNAME')
 ELASTIC_PASSWORD = os.environ.get('ES_PASSWORD')
 ELASTIC_HOST = os.environ.get('ES_HOST')
 
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# app.config['WHOOSH_BASE'] = 'whoosh'
-
-# db = SQLAlchemy(app)
-
-# search = Search()
-# search.init_app(app)
-
 
 es_client = Elasticsearch(
     hosts=[ELASTIC_HOST],
@@ -44,14 +33,6 @@ es_client = Elasticsearch(
 # Successful response!
 print('client_info', es_client.info())
 
-#When I initially used Whoosh for indexing
-# class File(db.Model):
-#     __tablename__ = 'files'
-#     __searchable__ = ['title', 'content', 'path']
-#     id = db.Column(db.Integer, primary_key=True)
-#     path = db.Column(db.String())
-#     title = db.Column(db.String())
-#     content = db.Column(db.String())
 
 @app.before_request
 def check_auth_token():
@@ -100,16 +81,9 @@ def add_link():
         results = []
         # run the search asynchronously
         for history in historyData:
-                        # scrape_index_link.apply_async(args=[history, user_email])
-
             celery.send_task('tasks.add_link', args=[history, user_email], kwargs={})
 
         return results
-
-        # whoosh workflow
-        # file = File(path=dic['url'], title=dic['title'], content=dic['content'])
-        # db.session.add(file)
-        # db.session.commit()
 
 
 @app.route('/delete', methods=['POST'])
@@ -174,11 +148,6 @@ def search():
             files = [dict(i['_source']) for i in res['hits']['hits'] ]
 
         return files
-
-        # whoosh wokflow
-        # files = File.query.msearch(query).all()
-        # return render_template('index.html', files=files)
-
 
 if __name__ == '__main__':
     app.run()
