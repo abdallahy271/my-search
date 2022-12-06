@@ -15,6 +15,7 @@ jobs:
       working-directory: ./backend
       run: |
           mkdir .env && touch .env/queue.env && touch .env/api.env
+          echo $GITHUB_WORKSPACE
           echo "${{ secrets.QUEUE_ENV }}" > .env/queue.env
           echo "${{ secrets.API_ENV }}" > .env/api.env
 
