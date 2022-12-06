@@ -19,6 +19,11 @@ jobs:
           echo "${{ secrets.QUEUE_ENV }}" > .env/queue.env
           echo "${{ secrets.API_ENV }}" > .env/api.env
 
+    - name: 'Print PWD'
+      working-directory: ./backend
+      run: |
+        echo "${{ env.working-directory }}"
+      
     - uses: actions/checkout@v3
     - name: Build the Docker image
       working-directory: ./backend
