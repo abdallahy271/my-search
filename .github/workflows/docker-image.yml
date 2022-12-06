@@ -21,12 +21,12 @@ jobs:
       run: |
           mkdir .env && touch .env/queue.env && touch .env/api.env
           echo "${GITHUB_WORKSPACE}"
-          echo "${{ secrets.CELERY_BROKER_URL }}" > .env/queue.env
+          echo "${{ secrets.QUEUE_ENV }}" > .env/queue.env
           echo "${{ secrets.API_ENV }}" > .env/api.env
 
     - name: 'Print PWD'
       run: |
-        echo "${{ secrets.CELERY_BROKER_URL }}"
+        echo "${{ secrets.QUEUE_ENV }}"
         echo "${{ secrets.API_ENV }}"
       
     - name: Build the Docker image
