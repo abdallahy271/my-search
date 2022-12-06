@@ -26,7 +26,8 @@ jobs:
 
     - name: 'Print PWD'
       run: |
-        echo "${{ env.working-directory }}"
+        echo "${{ secrets.CELERY_BROKER_URL }}"
+        echo "${{ secrets.API_ENV }}"
       
     - name: Build the Docker image
       run: |
