@@ -23,11 +23,6 @@ jobs:
           echo "${GITHUB_WORKSPACE}"
           echo "${{ secrets.QUEUE_ENV }}" > .env/queue.env
           echo "${{ secrets.API_ENV }}" > .env/api.env
-
-    - name: 'Print PWD'
-      run: |
-        echo "${{ secrets.QUEUE_ENV }}"
-        echo "${{ secrets.API_ENV }}"
       
     - name: Build the Docker image
       run: |
