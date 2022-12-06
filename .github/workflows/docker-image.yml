@@ -3,6 +3,11 @@ name: Docker Image CI
 on:
   push:
     branches: [ "master" ]
+    
+defaults:
+  run:
+    working-directory: backend
+
 
 jobs:
 
@@ -12,20 +17,17 @@ jobs:
 
     steps:
     - name: 'Create env file'
-      working-directory: ./backend
       run: |
           mkdir .env && touch .env/queue.env && touch .env/api.env
-          echo "$GITHUB_WORKSPACE"
-          echo "${{ secrets.QUEUE_ENV }}" > .env/queue.env
+          echo "${GITHUB_WORKSPACE}"
+          echo "${{ secrets.CELERY_BROKER_URL }}" > .env/queue.env
           echo "${{ secrets.API_ENV }}" > .env/api.env
 
     - name: 'Print PWD'
-      working-directory: ./backend
       run: |
         echo "${{ env.working-directory }}"
       
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      working-directory: ./backend
       run: |
         docker-compose up --build 
