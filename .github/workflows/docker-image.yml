@@ -11,7 +11,14 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    - name: 'Create env file'
+      working-directory: ./backend
+      run: |
+          echo "${{ secrets.QUEUE_ENV }}" > .env/queue.env
+          echo "${{ secrets.API_ENV }}" > .env/api.env
+
     - uses: actions/checkout@v3
     - name: Build the Docker image
       working-directory: ./backend
-      run: docker-compose up --build 
+      run: |
+        docker-compose up --build 
