@@ -16,6 +16,10 @@ jobs:
     runs-on: self-hosted
 
     steps:
+    - name: Give permission
+      run: |
+          sudo chown -R $USER:$USER ${{ github.workspace }}
+    
     - uses: actions/checkout@v3
     - name: 'Create env file'
       run: |
