@@ -43,10 +43,16 @@ def scrape_index_link(history, user_email):
     visitCount = history['visitCount']
     lastVisitTime = history['lastVisitTime']
 
-    dic = scraper(link)
+    dic = {}
+    # Scrape the history link with Beautifulsoup
+    try:
+        dic = scraper(link)
+    except:
+        return
+
     full_dic = { 
             "user":user_email,
-            "title": title,
+            "title": title if title else link,
             "lastVisitTime": lastVisitTime,
             "visitCount": visitCount,
             **dic,

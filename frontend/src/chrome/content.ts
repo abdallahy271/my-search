@@ -212,12 +212,6 @@ function addWithFlask(
     }
   }
          
-
-
-
-
-
-
 const main = () => {
     console.log('[content.ts] Main', chrome?.runtime?.id)
     /**
