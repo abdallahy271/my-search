@@ -1,69 +1,16 @@
 # MySearch
 
-## For Development:
+## Note:
+MySearch backend ia already hosted on a public domain: mychromehistory.world.
+Testing the application would just require setting up the Chrome extension locally
 
-### Start Elasticsearch
-
-Install Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html
-
-Then,
-```
-cd elasticsearch-8.4.3
-
-./bin/elasticsearch
-```
-
-### Start Kibana
-
-Install Kibana: https://www.elastic.co/guide/en/kibana/current/install.html
-
-```
-cd kibana-8.4.3
-
-./bin/kibana
-```
-
-### Install all packages
-
-```
-cd my-search/backend
-python3 -m venv venv
-source venv/bin/activate
-pip3 install -r requirements.txt
-```
-### Start Redis
-```
-redis-server
-```
-
-Check if redis is installed
-```redis-cli```
-
-### Start Celery
-```
-celery -A app.celery_client worker --loglevel=info
-```
-
-### Start Flower
-```
-celery -A app.celery_client flower --port=5555
-```
-
-### Start Flask
-```
-flask run
-```
-
-### Create a React build
-```
-npm build
-```
-
-
-## Test Chrome Extension
+## Set up Chrome Extension
 
 ### Find Extensions on Google Chrome
 ![Find Extensions on Google Chrome](./assets/find_ext.png)
+
+### Turn "Developer mode" on 
+![Turn Developer mode on](./assets/developer_mode.png)
 
 ### Select "load unpacked"
 ![Select load unpacked](./assets/load_unpacked.png)
