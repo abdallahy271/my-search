@@ -195,7 +195,6 @@ function addWithFlask(
                     if (tokenId != null){
                       jwtToken = tokenId
                       let user_info = jwt_decode<TokenPayload>(tokenId);
-                      console.log(user_info)
                       userEmail = user_info?.email
                       sendResponse({type: 'Success', response: userEmail})
   
