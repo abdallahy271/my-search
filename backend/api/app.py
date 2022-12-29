@@ -130,7 +130,7 @@ def search():
                                 }
                         },
                         {
-                            "match": 
+                            "match_phrase": 
                                     {
                                     "user": user_email
                                     }
