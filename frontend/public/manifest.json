@@ -4,6 +4,7 @@
   "description": "Convenient Google Chrome History Searcher",
   "version": "1.0",
   "manifest_version": 2,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlFt7vQIUfeRmk7syto8N/X+iGMwAOzEEZNIJw0nvhW3mJDFNKU1yNnRHDWi94vxGe6RUVpsyucX/DgrcU2SKzeassVBf61laOUm5P8s0pfcoaM1IbXrkFCuGA63YAXz+A3AjYzyPzaGnBHleS+QWkNyA8DhZTitTxXyiIlpQS1NDCRnAsIXM0IZAwhew7YPfoiiwVPhMwaL/M40mUvHtM+7/konbJ6ElVtqUxlBLOUzHri0RG8cX3+nWpkGqYXWXycLp55ihXs+6y3r5X33MhhqeD8x5Hix5xsaWhpyshbUOPNEkrOlsq7NJLmI29UGSRUYSf0tkmuiUOyEn2zQaLwIDAQAB",
   "background":{
     "scripts": ["./static/js/content.js"]
   },
