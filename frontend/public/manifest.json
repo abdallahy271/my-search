@@ -3,35 +3,28 @@
   "name": "MySearch",
   "description": "Convenient Google Chrome History Searcher",
   "version": "1.0",
-  "manifest_version": 2,
+  "manifest_version": 3,
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlFt7vQIUfeRmk7syto8N/X+iGMwAOzEEZNIJw0nvhW3mJDFNKU1yNnRHDWi94vxGe6RUVpsyucX/DgrcU2SKzeassVBf61laOUm5P8s0pfcoaM1IbXrkFCuGA63YAXz+A3AjYzyPzaGnBHleS+QWkNyA8DhZTitTxXyiIlpQS1NDCRnAsIXM0IZAwhew7YPfoiiwVPhMwaL/M40mUvHtM+7/konbJ6ElVtqUxlBLOUzHri0RG8cX3+nWpkGqYXWXycLp55ihXs+6y3r5X33MhhqeD8x5Hix5xsaWhpyshbUOPNEkrOlsq7NJLmI29UGSRUYSf0tkmuiUOyEn2zQaLwIDAQAB",
-  "background":{
-    "scripts": ["./static/js/content.js"]
-  },
-  "browser_action": {
-    "default_popup": "index.html",
-    "default_title": "Search your history"
+  "background": {
+    "service_worker": "service_worker.js"
   },
   "icons": {
-    "16": "logo192.png",
-    "48": "logo192.png",
-    "128": "logo192.png"
+    "16": "mysearch-icon.png",
+    "48": "mysearch-icon.png",
+    "128": "mysearch-icon.png"
   },
-  "content_security_policy": "script-src 'self' 'unsafe-eval' https://accounts.google.com/o/oauth2/v2/auth https://www.googleapis.com/oauth2/v3/userinfo https://accounts.google.com/gsi/client http://127.0.0.1:5000/login; object-src 'self'",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'unsafe-eval' https://accounts.google.com/o/oauth2/v2/auth https://www.googleapis.com/oauth2/v3/userinfo ; object-src 'self'"
+  },
   "permissions": [
     "tab",
     "activeTab",
     "identity",
     "history",
-    "storage",
-    "cookies",
-    "http://localhost:5000/*",
-    "*://*.google.com/*",
-    "https://mychromehistory.world/"
-
+    "storage"
   ],
   "host_permissions": [
-    "*://*.google.com/",
+    "*://*.google.com/*",
     "https://mychromehistory.world/"
   ],
   "optional_permissions": [
@@ -39,19 +32,27 @@
   ],
   "oauth2": {
     "client_id": "1055552337084-qfefrd3i2u24qm9t7lf8q8fvm6otubif.apps.googleusercontent.com",
-    "scopes":[
-      "openid", 
-      "email", 
+    "scopes": [
+      "openid",
+      "email",
       "profile"
     ]
   },
-
   "content_scripts": [
     {
-      "matches": ["http://*/*", "https://*/*"],
-      "js": ["./static/js/content.js"],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "./static/js/content.js"
+      ],
       "all_frames": false,
       "run_at": "document_end"
     }
-  ]
+  ],
+  "action": {
+    "default_popup": "index.html",
+    "default_title": "Search your history"
+  }
 }

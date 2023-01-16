@@ -46,11 +46,15 @@ const App = () => {
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
             <div className="App">
-                <header className="App-header">
-                    <img src={logo} className="App-logo" alt="logo"/>
+                {/* <header className="App-header"> */}
+                    {/* <img src={logo} className="App-logo" alt="logo"/> */}
+                    <div className="content">
+                        <h6>mysearch</h6>
+                        <h6>mysearch</h6>
+                    </div>
                     <div></div>
                     <SearchBar userEmail={userEmail} error={error} setError={setError}/>
-                </header>
+                {/* </header> */}
             </div>
         </ThemeProvider>
 

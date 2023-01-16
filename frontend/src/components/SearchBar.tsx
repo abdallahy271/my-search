@@ -76,6 +76,7 @@ export const SearchBar: React.FC<SearchBarProp> = ({ userEmail, error, setError 
                 sx={{
                     width: 400,
                     maxWidth: '100%',
+                    marginTop: 'inherit',
                     marginBottom: 2,
                     display: 'flex',
                 }}
