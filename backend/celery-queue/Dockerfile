@@ -8,7 +8,7 @@ WORKDIR /queue
 
 COPY requirements.txt /queue
 
-RUN pip install -U setuptools pip
+RUN pip install --no-cache-dir -U setuptools pip
 RUN pip install -r requirements.txt
 
 COPY . /queue

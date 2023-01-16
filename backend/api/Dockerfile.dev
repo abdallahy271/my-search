@@ -11,7 +11,7 @@ WORKDIR /api
 
 COPY requirements.txt /api
 
-RUN pip install -U setuptools pip
+RUN pip install --no-cache-dir -U setuptools pip
 RUN pip install -r requirements.txt
 
 COPY . /api
