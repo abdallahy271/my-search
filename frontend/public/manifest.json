@@ -17,8 +17,6 @@
     "extension_pages": "script-src 'self' ; object-src 'self'"
   },
   "permissions": [
-    "tab",
-    "activeTab",
     "identity",
     "history",
     "storage"
