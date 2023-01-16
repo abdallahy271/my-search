@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import logo from './logo.svg';
 import { ChromeMessage, Sender } from "./types";
 import { SearchBar } from "./components/SearchBar"
 import './App.css';
@@ -46,15 +45,12 @@ const App = () => {
         <ThemeProvider theme={darkTheme}>
             <CssBaseline />
             <div className="App">
-                {/* <header className="App-header"> */}
-                    {/* <img src={logo} className="App-logo" alt="logo"/> */}
-                    <div className="content">
-                        <h6>mysearch</h6>
-                        <h6>mysearch</h6>
-                    </div>
-                    <div></div>
-                    <SearchBar userEmail={userEmail} error={error} setError={setError}/>
-                {/* </header> */}
+                <div className="content">
+                    <h6>mysearch</h6>
+                    <h6>mysearch</h6>
+                </div>
+                <div></div>
+                <SearchBar userEmail={userEmail} error={error} setError={setError}/>
             </div>
         </ThemeProvider>
 
