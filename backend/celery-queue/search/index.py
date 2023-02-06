@@ -1,6 +1,4 @@
-from whoosh.fields import Schema, TEXT, ID
 import os, os.path
-from whoosh import index, qparser
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Comment
