@@ -30,5 +30,6 @@ jobs:
       
     - name: Build the Docker image
       run: |
+        docker-compose down --rmi all --volumes
         docker-compose up --build -d
  
