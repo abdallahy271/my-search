@@ -22,5 +22,4 @@ Testing the application would just require setting up the Chrome extension local
 ![Click MySearch in the list of extensions](./assets/mysearch_pin.png)
 
 ### Start using MySearch
-![Start using MySearch](./assets/mysearch_app.png)
-
+<img width="795" alt="Screen Shot 2023-02-25 at 4 10 47 PM" src="https://user-images.githubusercontent.com/56769914/221385335-1e492970-e5a1-41b9-8d7c-f6676c7aea96.png">
